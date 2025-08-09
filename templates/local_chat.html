@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block model_selector %}
+<!-- No model selector for local models -->
+{% endblock %}
+
+{% block welcome_message %}
+<div class="welcome-message" id="welcomeMessage">
+    <h2>Welcome to DiffuChatGPT</h2>
+    <p id="welcomeDescription">This demo uses local Transformers models (SmolLM2-135M-Instruct)</p>
+    <p>Start typing your message below to begin chatting</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    class LocalChatApp {
+        constructor() {
+            this.messages = [];
+            this.currentModel = 'SmolLM2-135M-Instruct';
+            this.isTyping = false;
+            this.selectedText = '';
+            this.selectedElement = null;
+            this.currentTab = 'local'; // Fixed tab for this page
+            
+            this.initializeElements();
+            this.bindEvents();
+            this.initializeContextMenu();
+        }
+        
+        initializeElements() {
+            this.chatMessages = document.getElementById('chatMessages');
+            this.messageInput = document.getElementById('messageInput');
+            this.sendButton = document.getElementById('sendButton');
+            this.typingIndicator = document.getElementById('typingIndicator');
+            this.contextMenu = document.getElementById('contextMenu');
+            this.remaskOption = document.getElementById('remaskOption');
+            this.maskCountInput = document.getElementById('maskCount');
+            this.welcomeDescription = document.getElementById('welcomeDescription');
+        }
+        
+        bindEvents() {
+            this.sendButton.addEventListener('click', () => this.sendMessage());
+            this.messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.sendMessage();
+                }
+            });
+            
+            this.messageInput.addEventListener('input', () => {
+                this.autoResize();
+            });
+        }
+        
+        autoResize() {
+            this.messageInput.style.height = '24px';
+            this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+        }
+        
+        initializeContextMenu() {
+            // Handle right-click on message content
+            document.addEventListener('contextmenu', (e) => {
+                const messageContent = e.target.closest('.message-content');
+                if (messageContent) {
+                    e.preventDefault();
+                    this.handleRightClick(e, messageContent);
+                } else {
+                    this.hideContextMenu();
+                }
+            });
+            
+            // Handle clicks outside context menu
+            document.addEventListener('click', (e) => {
+                if (!this.contextMenu.contains(e.target)) {
+                    this.hideContextMenu();
+                }
+            });
+            
+            // Prevent context menu from closing when clicking on input
+            this.maskCountInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            // Handle remask option click
+            this.remaskOption.addEventListener('click', () => {
+                this.handleRemask();
+                this.hideContextMenu();
+            });
+            
+            // Handle text selection
+            document.addEventListener('mouseup', () => {
+                this.handleTextSelection();
+            });
+        }
+        
+        handleRightClick(e, messageContent) {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            
+            if (selectedText) {
+                this.selectedText = selectedText;
+                this.selectedElement = messageContent;
+                this.showContextMenu(e.pageX, e.pageY);
+            }
+        }
+        
+        handleTextSelection() {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            
+            if (selectedText) {
+                this.selectedText = selectedText;
+                // Find the message content element that contains the selection
+                const range = selection.getRangeAt(0);
+                this.selectedElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
+                    ? range.commonAncestorContainer.parentElement.closest('.message-content')
+                    : range.commonAncestorContainer.closest('.message-content');
+            }
+        }
+        
+        showContextMenu(x, y) {
+            this.contextMenu.style.left = x + 'px';
+            this.contextMenu.style.top = y + 'px';
+            this.contextMenu.style.display = 'block';
+            
+            // Adjust position if menu goes off screen
+            const rect = this.contextMenu.getBoundingClientRect();
+            if (rect.right > window.innerWidth) {
+                this.contextMenu.style.left = (x - rect.width) + 'px';
+            }
+            if (rect.bottom > window.innerHeight) {
+                this.contextMenu.style.top = (y - rect.height) + 'px';
+            }
+        }
+        
+        hideContextMenu() {
+            this.contextMenu.style.display = 'none';
+        }
+        
+        async handleRemask() {
+            if (!this.selectedText || !this.selectedElement) {
+                console.log('No text selected for remasking');
+                return;
+            }
+            
+            console.log('Remasking text:', this.selectedText);
+            
+            // Find the message that contains the selected text
+            const messageDiv = this.selectedElement.closest('.message');
+            if (!messageDiv) {
+                console.log('Could not find message container');
+                return;
+            }
+            
+            // Get the original message content
+            const originalContent = this.selectedElement.textContent;
+            
+            // Get the number of mask tokens from input
+            const maskCount = parseInt(this.maskCountInput.value) || 1;
+            
+            // Create multiple mask tokens
+            const maskTokens = '<|mask|>'.repeat(maskCount);
+            
+            // Replace selected text with multiple <|mask|> tokens
+            const maskedContent = originalContent.replace(this.selectedText, maskTokens);
+            
+            // Temporarily update the display to show the mask
+            this.selectedElement.textContent = maskedContent;
+            this.highlightMaskToken();
+            
+            // Show typing indicator
+            this.showTyping();
+            
+            try {
+                const remaskMessages = [
+                    ...this.messages.slice(0, -1), // All messages except the last assistant message
+                    { role: 'assistant', content: maskedContent }
+                ];
+                
+                const requestPayload = {
+                    messages: remaskMessages,
+                    model: this.currentModel
+                };
+                
+                console.log('=== REMASK REQUEST TO LOCAL MODEL ===');
+                console.log('Current Tab:', this.currentTab);
+                console.log('Original selected text:', this.selectedText);
+                console.log('Mask count:', maskCount);
+                console.log('Mask tokens:', maskTokens);
+                console.log('Original assistant message:', this.messages[this.messages.length - 1].content);
+                console.log('Masked assistant message:', maskedContent);
+                console.log('Model:', this.currentModel);
+                console.log('Full messages array:', JSON.stringify(remaskMessages, null, 2));
+                console.log('=======================================');
+                
+                const response = await fetch('/chat/local', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the last assistant message in our messages array
+                    if (this.messages.length > 0 && this.messages[this.messages.length - 1].role === 'assistant') {
+                        this.messages[this.messages.length - 1].content = data.message;
+                    }
+                    
+                    // Replace the assistant message content in the UI
+                    this.selectedElement.textContent = data.message;
+                    
+                    // Add a subtle animation to show the change
+                    this.selectedElement.style.transition = 'background-color 0.5s ease';
+                    this.selectedElement.style.backgroundColor = '#10a37f20';
+                    setTimeout(() => {
+                        this.selectedElement.style.backgroundColor = '';
+                    }, 1000);
+                    
+                } else {
+                    // Restore original content on error
+                    this.selectedElement.textContent = originalContent;
+                    this.addErrorMessage('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Restore original content on error
+                this.selectedElement.textContent = originalContent;
+                this.addErrorMessage('Failed to connect to the local model server.');
+            } finally {
+                this.hideTyping();
+            }
+            
+            // Clear selection
+            this.selectedText = '';
+            this.selectedElement = null;
+            window.getSelection().removeAllRanges();
+        }
+        
+        highlightMaskToken() {
+            if (!this.selectedElement) return;
+            
+            const content = this.selectedElement.textContent;
+            const maskToken = '<|mask|>';
+            
+            // Replace ALL mask tokens with highlighted versions
+            const highlightedContent = content.replace(
+                new RegExp(this.escapeRegExp(maskToken), 'g'),
+                '<span class="mask-token-highlight">' + maskToken + '</span>'
+            );
+            
+            this.selectedElement.innerHTML = highlightedContent;
+        }
+        
+        escapeRegExp(string) {
+            // Escape special regex characters
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        async sendMessage() {
+            const message = this.messageInput.value.trim();
+            if (!message || this.isTyping) return;
+            
+            // Add user message
+            this.addMessage('user', message);
+            this.messageInput.value = '';
+            this.autoResize();
+            
+            // Update messages array
+            this.messages.push({ role: 'user', content: message });
+            
+            // Show typing indicator
+            this.showTyping();
+            
+            try {
+                const requestPayload = {
+                    messages: this.messages,
+                    model: this.currentModel
+                };
+                
+                console.log('=== SENDING TO LOCAL MODEL ===');
+                console.log('Current Tab:', this.currentTab);
+                console.log('Model:', this.currentModel);
+                console.log('Messages:', JSON.stringify(this.messages, null, 2));
+                console.log('=====================================');
+                
+                const response = await fetch('/chat/local', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.messages.push({ role: 'assistant', content: data.message });
+                    this.addMessage('assistant', data.message);
+                } else {
+                    this.addErrorMessage('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                this.addErrorMessage('Failed to connect to the local model server. Please check if transformers and torch are installed.');
+            } finally {
+                this.hideTyping();
+            }
+        }
+        
+        addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'You' : 'AI';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            // Remove welcome message if it exists
+            const welcomeMessage = this.chatMessages.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+            
+            this.chatMessages.appendChild(messageDiv);
+            this.scrollToBottom();
+        }
+        
+        addErrorMessage(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            this.chatMessages.appendChild(errorDiv);
+            this.scrollToBottom();
+        }
+        
+        showTyping() {
+            this.isTyping = true;
+            this.sendButton.disabled = true;
+            this.typingIndicator.style.display = 'block';
+            this.scrollToBottom();
+        }
+        
+        hideTyping() {
+            this.isTyping = false;
+            this.sendButton.disabled = false;
+            this.typingIndicator.style.display = 'none';
+        }
+        
+        scrollToBottom() {
+            setTimeout(() => {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }, 100);
+        }
+    }
+    
+    // Initialize the local chat app when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        new LocalChatApp();
+    });
+</script>
+{% endblock %}

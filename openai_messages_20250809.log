@@ -1,0 +1,142 @@
+=== CHAT REQUEST - 2025-08-09 17:37:03 ===
+user,What is your name?
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:37:27 ===
+user,What is your name?
+assistant,As an artificial intelligence, <|mask|><|mask|><|mask|><|mask|><|mask|>nal name. I am OpenAI's language model known as GPT-3.
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:46:19 ===
+user,Hello?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  }
+]
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:46:24 ===
+user,Hello?
+assistant,Hello! How can I assist you today?
+user,What is your name?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "What is your name?"
+  }
+]
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:46:36 ===
+user,Hello?
+assistant,Hello! How can I assist you today?
+user,What is your name?
+assistant,I'm OpenAI, an <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> here to help with your questions and tasks.
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "What is your name?"
+  },
+  {
+    "role": "assistant",
+    "content": "I'm OpenAI, an <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> here to help with your questions and tasks."
+  }
+]
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:48:47 ===
+user,Hello?
+assistant,Hello! How can I assist you today?
+user,What is your name?
+assistant,I'm an AI developed by OpenAI. I <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> I'm a machine learning model trained to understand and generate human-like text based on the input I receive.
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "What is your name?"
+  },
+  {
+    "role": "assistant",
+    "content": "I'm an AI developed by OpenAI. I <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> I'm a machine learning model trained to understand and generate human-like text based on the input I receive."
+  }
+]
+==================================================
+=== CHAT REQUEST - 2025-08-09 17:58:23 ===
+user,Hello?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  }
+]
+==================================================
+=== LOCAL_MODEL REQUEST - 2025-08-09 18:01:23 ===
+user,Hello?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  }
+]
+==================================================
+=== LOCAL_MODEL REQUEST - 2025-08-09 18:26:23 ===
+user,Hello?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  }
+]
+==================================================
+=== LOCAL_MODEL REQUEST - 2025-08-09 18:30:33 ===
+user,Hello?
+assistant,Hello! I'm here to help you with <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> or puzzles. What's on your mind?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! I'm here to help you with <|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|><|mask|> or puzzles. What's on your mind?"
+  }
+]
+==================================================
+=== LLADA REQUEST - 2025-08-09 18:30:47 ===
+user,Hello?
+--- RAW JSON ---
+[
+  {
+    "role": "user",
+    "content": "Hello?"
+  }
+]
+==================================================
