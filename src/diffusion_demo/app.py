@@ -73,12 +73,12 @@ def initialize_models():
         app_logger.error(f"❌ Failed to initialize Autoregressive model: {e}")
     
     # Initialize LLaDA model (temporarily disabled for testing)
-    # try:
-    #     llada_model = LLaDAModel()
-    #     model_manager.register_model("llada", llada_model)
-    #     app_logger.info("✅ LLaDA model initialized")
-    # except Exception as e:
-    #     app_logger.error(f"❌ Failed to initialize LLaDA model: {e}")
+    try:
+        llada_model = LLaDAModel()
+        model_manager.register_model("llada", llada_model)
+        app_logger.info("✅ LLaDA model initialized")
+    except Exception as e:
+        app_logger.error(f"❌ Failed to initialize LLaDA model: {e}")
     
     app_logger.info("🎯 Model initialization completed")
     
