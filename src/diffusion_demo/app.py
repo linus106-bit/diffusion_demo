@@ -72,13 +72,13 @@ def initialize_models():
     except Exception as e:
         app_logger.error(f"❌ Failed to initialize Autoregressive model: {e}")
     
-    # Initialize LLaDA model
-    try:
-        llada_model = LLaDAModel()
-        model_manager.register_model("llada", llada_model)
-        app_logger.info("✅ LLaDA model initialized")
-    except Exception as e:
-        app_logger.error(f"❌ Failed to initialize LLaDA model: {e}")
+    # Initialize LLaDA model (temporarily disabled for testing)
+    # try:
+    #     llada_model = LLaDAModel()
+    #     model_manager.register_model("llada", llada_model)
+    #     app_logger.info("✅ LLaDA model initialized")
+    # except Exception as e:
+    #     app_logger.error(f"❌ Failed to initialize LLaDA model: {e}")
     
     app_logger.info("🎯 Model initialization completed")
     
@@ -97,14 +97,35 @@ def main():
     app.state.model_manager = model_manager
     
     # Start server
-    uvicorn.run(
-        app,
-        host=config.server.host,
-        port=config.server.port,
-        reload=config.server.reload,
-        log_level=config.logging.log_level.lower()
-    )
+    if config.server.reload:
+        # Use import string for reload mode
+        uvicorn.run(
+            "diffusion_demo.app:app",
+            host=config.server.host,
+            port=config.server.port,
+            reload=True,
+            log_level=config.logging.log_level.lower()
+        )
+    else:
+        # Use direct app object for non-reload mode
+        uvicorn.run(
+            app,
+            host=config.server.host,
+            port=config.server.port,
+            reload=False,
+            log_level=config.logging.log_level.lower()
+        )
 
+
+# Create global app instance for uvicorn import
+app = create_app()
+
+# Initialize models for the global app instance
+try:
+    model_manager = initialize_models()
+    app.state.model_manager = model_manager
+except Exception as e:
+    app_logger.error(f"❌ Failed to initialize models for global app: {e}")
 
 if __name__ == "__main__":
     main()
