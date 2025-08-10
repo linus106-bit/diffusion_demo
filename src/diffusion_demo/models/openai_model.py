@@ -72,10 +72,11 @@ class OpenAIModel(BaseModel):
             max_tokens = max_tokens or config.openai.max_tokens
             temperature = temperature or config.openai.temperature
             
+            # Log messages before generation
+            self.log_messages_before_generation(messages, max_tokens, temperature, **kwargs)
+            
             # Convert messages to OpenAI format
             openai_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
-            
-            app_logger.info(f"🎯 OpenAI generating with {max_tokens} tokens, temp={temperature}")
             
             # Make API call
             if hasattr(self.client, 'chat'):

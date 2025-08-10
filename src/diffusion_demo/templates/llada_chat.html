@@ -176,8 +176,18 @@
             this.showTyping();
             
             try {
+                // Find the last user message (the one that prompted the assistant response)
+                let lastUserMessage = null;
+                for (let i = this.messages.length - 1; i >= 0; i--) {
+                    if (this.messages[i].role === 'user') {
+                        lastUserMessage = this.messages[i];
+                        break;
+                    }
+                }
+                
+                // Create remask messages with both user and remasked assistant message
                 const remaskMessages = [
-                    ...this.messages.slice(0, -1), // All messages except the last assistant message
+                    { role: 'user', content: lastUserMessage ? lastUserMessage.content : 'Previous user message' },
                     { role: 'assistant', content: maskedContent }
                 ];
                 
@@ -191,10 +201,11 @@
                 console.log('Original selected text:', this.selectedText);
                 console.log('Mask count:', maskCount);
                 console.log('Mask tokens:', maskTokens);
+                console.log('Last user message:', lastUserMessage ? lastUserMessage.content : 'Not found');
                 console.log('Original assistant message:', this.messages[this.messages.length - 1].content);
                 console.log('Masked assistant message:', maskedContent);
                 console.log('Model:', this.currentModel);
-                console.log('Full messages array:', JSON.stringify(remaskMessages, null, 2));
+                console.log('Remask messages structure:', JSON.stringify(remaskMessages, null, 2));
                 console.log('=======================================');
                 
                 const response = await fetch('/chat/llada', {

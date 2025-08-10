@@ -130,6 +130,9 @@ class AutoregressiveModel(BaseModel):
             max_tokens = max_tokens or config.autoregressive_model.max_tokens
             temperature = temperature or config.autoregressive_model.temperature
             
+            # Log messages before generation
+            self.log_messages_before_generation(messages, max_tokens, temperature, **kwargs)
+            
             # Format messages using chat template if available
             if self.supports_chat_template:
                 text = self._format_messages_with_template(messages)
@@ -138,8 +141,6 @@ class AutoregressiveModel(BaseModel):
             
             # Tokenize input
             model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
-            
-            app_logger.info(f"🎯 Autoregressive model generating with {max_tokens} tokens, temp={temperature}")
             
             # Generate response with advanced parameters
             with torch.no_grad():

@@ -163,14 +163,15 @@ class LLaDAModel(BaseModel):
             cfg_scale = cfg_scale or config.llada.cfg_scale
             remasking = remasking or config.llada.remasking
             
+            # Log messages before generation
+            self.log_messages_before_generation(messages, max_tokens, temperature, **kwargs)
+            
             # Format the conversation
             prompt = self.format_chat_messages(messages)
             
             # Tokenize input
             input_ids = self.tokenizer(prompt)['input_ids']
             input_ids = torch.tensor(input_ids).to(self.device).unsqueeze(0)
-            
-            app_logger.info(f"🎯 LLaDA generating with {steps} steps, {max_tokens} tokens...")
             
             # Generate using the original generate function from llada.py
             with torch.no_grad():
