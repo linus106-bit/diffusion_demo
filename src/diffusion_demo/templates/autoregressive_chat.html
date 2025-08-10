@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block model_selector %}
-<!-- No model selector for local models -->
+<!-- No model selector for autoregressive models -->
 {% endblock %}
 
 {% block welcome_message %}
@@ -14,7 +14,7 @@
 
 {% block scripts %}
 <script>
-    class LocalChatApp {
+    class AutoregressiveChatApp {
         constructor() {
             this.messages = [];
             this.currentModel = 'SmolLM2-135M-Instruct';
@@ -183,7 +183,7 @@
                     model: this.currentModel
                 };
                 
-                console.log('=== REMASK REQUEST TO LOCAL MODEL ===');
+                console.log('=== REMASK REQUEST TO AUTOREGRESSIVE MODEL ===');
                 console.log('Current Tab:', this.currentTab);
                 console.log('Original selected text:', this.selectedText);
                 console.log('Mask count:', maskCount);
@@ -194,7 +194,7 @@
                 console.log('Full messages array:', JSON.stringify(remaskMessages, null, 2));
                 console.log('=======================================');
                 
-                const response = await fetch('/chat/local', {
+                const response = await fetch('/chat/autoregressive', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -229,7 +229,7 @@
                 console.error('Error:', error);
                 // Restore original content on error
                 this.selectedElement.textContent = originalContent;
-                this.addErrorMessage('Failed to connect to the local model server.');
+                this.addErrorMessage('Failed to connect to the autoregressive model server.');
             } finally {
                 this.hideTyping();
             }
@@ -281,13 +281,13 @@
                     model: this.currentModel
                 };
                 
-                console.log('=== SENDING TO LOCAL MODEL ===');
+                console.log('=== SENDING TO AUTOREGRESSIVE MODEL ===');
                 console.log('Current Tab:', this.currentTab);
                 console.log('Model:', this.currentModel);
                 console.log('Messages:', JSON.stringify(this.messages, null, 2));
                 console.log('=====================================');
                 
-                const response = await fetch('/chat/local', {
+                const response = await fetch('/chat/autoregressive', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -305,7 +305,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                this.addErrorMessage('Failed to connect to the local model server. Please check if transformers and torch are installed.');
+                this.addErrorMessage('Failed to connect to the autoregressive model server. Please check if transformers and torch are installed.');
             } finally {
                 this.hideTyping();
             }
@@ -364,9 +364,9 @@
         }
     }
     
-    // Initialize the local chat app when the page loads
+    // Initialize the autoregressive chat app when the page loads
     document.addEventListener('DOMContentLoaded', () => {
-        new LocalChatApp();
+        new AutoregressiveChatApp();
     });
 </script>
 {% endblock %}
