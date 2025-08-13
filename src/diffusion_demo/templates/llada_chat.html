@@ -92,8 +92,11 @@
             });
             
             // Handle text selection
-            document.addEventListener('mouseup', () => {
-                this.handleTextSelection();
+            document.addEventListener('mouseup', (e) => {
+                // Don't process text selection if interacting with context menu
+                if (!this.contextMenu.contains(e.target)) {
+                    this.handleTextSelection();
+                }
             });
         }
         
@@ -113,13 +116,18 @@
             const selectedText = selection.toString().trim();
             
             if (selectedText) {
-                this.selectedText = selectedText;
-                // Find the message content element that contains the selection
+                // Only update selection if it's within message content
                 const range = selection.getRangeAt(0);
-                this.selectedElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
+                const messageElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
                     ? range.commonAncestorContainer.parentElement.closest('.message-content')
                     : range.commonAncestorContainer.closest('.message-content');
+                
+                if (messageElement) {
+                    this.selectedText = selectedText;
+                    this.selectedElement = messageElement;
+                }
             }
+            // Don't clear existing selection if no new valid selection is made
         }
         
         showContextMenu(x, y) {
