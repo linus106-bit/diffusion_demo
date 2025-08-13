@@ -39,6 +39,7 @@
             this.contextMenu = document.getElementById('contextMenu');
             this.remaskOption = document.getElementById('remaskOption');
             this.maskCountInput = document.getElementById('maskCount');
+            this.maskPromptInput = document.getElementById('maskPrompt');
             this.welcomeDescription = document.getElementById('welcomeDescription');
         }
         
@@ -80,8 +81,12 @@
                 }
             });
             
-            // Prevent context menu from closing when clicking on input
+            // Prevent context menu from closing when clicking on inputs
             this.maskCountInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            this.maskPromptInput.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
             
@@ -170,6 +175,9 @@
             // Get the number of mask tokens from input
             const maskCount = parseInt(this.maskCountInput.value) || 1;
             
+            // Get additional prompt for remasking
+            const additionalPrompt = this.maskPromptInput.value.trim();
+            
             // Create multiple mask tokens
             const maskTokens = '<|mask|>'.repeat(maskCount);
             
@@ -193,9 +201,15 @@
                     }
                 }
                 
+                // Create user message content with optional additional prompt
+                let userContent = lastUserMessage ? lastUserMessage.content : 'Previous user message';
+                if (additionalPrompt) {
+                    userContent += '\n\nAdditional instructions for remasking: ' + additionalPrompt;
+                }
+                
                 // Create remask messages with both user and remasked assistant message
                 const remaskMessages = [
-                    { role: 'user', content: lastUserMessage ? lastUserMessage.content : 'Previous user message' },
+                    { role: 'user', content: userContent },
                     { role: 'assistant', content: maskedContent }
                 ];
                 
@@ -208,8 +222,10 @@
                 console.log('Current Tab:', this.currentTab);
                 console.log('Original selected text:', this.selectedText);
                 console.log('Mask count:', maskCount);
+                console.log('Additional prompt:', additionalPrompt || '(none)');
                 console.log('Mask tokens:', maskTokens);
                 console.log('Last user message:', lastUserMessage ? lastUserMessage.content : 'Not found');
+                console.log('Enhanced user content:', userContent);
                 console.log('Original assistant message:', this.messages[this.messages.length - 1].content);
                 console.log('Masked assistant message:', maskedContent);
                 console.log('Model:', this.currentModel);
